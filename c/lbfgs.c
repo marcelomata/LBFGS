@@ -42,8 +42,12 @@
 #include <memory.h>
 
 #if defined _MSC_VER
+#if !defined isnan
 #define isnan(x) _isnan(x)
+#endif
+#if !defined isinf
 #define isinf(x) (!_finite(x))
+#endif
 #define inline __inline
 #endif
 
