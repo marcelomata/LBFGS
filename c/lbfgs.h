@@ -51,7 +51,6 @@ EXTERN void vecscale(double* y, const double c, const int n);
 EXTERN void vecdot(double* s, const double* x, const double* y, const int n);
 EXTERN void vec2norm(double* s, const double* x, const int n);
 EXTERN void vec2norminv(double* s, const double* x, const int n);
-EXTERN void vecswap(double* x, double* y, const int n);
 
 /************************************************************************/
 /* L-BFGS */

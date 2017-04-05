@@ -53,8 +53,6 @@
 double cblas_ddot(const int N, const double* X, const int incX, const double* Y,
                   const int incY);
 double cblas_dnrm2(const int N, const double* X, const int incX);
-void cblas_dswap(const int N, double* X, const int incX, double* Y,
-                 const int incY);
 void cblas_dcopy(const int N, const double* X, const int incX, double* Y,
                  const int incY);
 void cblas_daxpy(const int N, const double alpha, const double* X,
@@ -109,20 +107,6 @@ static double cblas_dnrm2(const int N, const double* X, const int incX) {
   }
 
   return scale * sqrt(ssq);
-}
-
-static void cblas_dswap(const int N, double* X, const int incX, double* Y,
-                        const int incY) {
-  int i;
-  int ix = OFFSET(N, incX);
-  int iy = OFFSET(N, incY);
-  for (i = 0; i < N; i++) {
-    const double tmp = X[ix];
-    X[ix] = Y[iy];
-    Y[iy] = tmp;
-    ix += incX;
-    iy += incY;
-  }
 }
 
 static void cblas_dcopy(const int N, const double* X, const int incX, double* Y,
@@ -274,8 +258,6 @@ void vec2norminv(double* s, const double* x, const int n) {
   *s = (1.0 / *s);
 }
 
-void vecswap(double* x, double* y, const int n) { cblas_dswap(n, x, 1, y, 1); }
-
 /************************************************************************/
 /* L-BFGS */
 /************************************************************************/
@@ -332,7 +314,7 @@ static void owlqn_project(double* d, const double* sign, const int start,
                           const int end);
 
 static void owlqn_constrain_line_search(double* d, const double* pg,
-                                       const int start, const int end);
+                                        const int start, const int end);
 
 static const lbfgs_parameter_t default_param = {
     6,       1e-5,  0,    1e-5, 0,   LBFGS_LINESEARCH_DEFAULT,
@@ -667,7 +649,7 @@ int lbfgs(int n, double* x, double* pfx, lbfgs_evaluate_t evaluate,
     /* Constrain the search direction for orthant-wise updates. */
     if (enable_owlqn) {
       owlqn_constrain_line_search(d, pg, param.orthantwise_start,
-                                 param.orthantwise_end);
+                                  param.orthantwise_end);
     }
 
     /* Now the search direction d is ready. We try step = 1 first. */
@@ -1364,7 +1346,7 @@ static void owlqn_project(double* d, const double* sign, const int start,
 }
 
 static void owlqn_constrain_line_search(double* d, const double* pg,
-                                       const int start, const int end) {
+                                        const int start, const int end) {
   int i;
   for (i = start; i < end; i++)
     if (d[i] * pg[i] >= 0) {
