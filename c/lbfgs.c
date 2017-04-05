@@ -331,7 +331,7 @@ static void owlqn_pseudo_gradient(double* pg, const double* x, const double* g,
 static void owlqn_project(double* d, const double* sign, const int start,
                           const int end);
 
-static void owlqn_contrain_line_search(double* d, const double* pg,
+static void owlqn_constrain_line_search(double* d, const double* pg,
                                        const int start, const int end);
 
 static const lbfgs_parameter_t default_param = {
@@ -359,7 +359,7 @@ int lbfgs(int n, double* x, double* pfx, lbfgs_evaluate_t evaluate,
           const lbfgs_parameter_t* _param) {
   int ret;
   int i, j, k, ls, end, bound, n_evaluate = 0;
-  int enalbe_owlqn;
+  int enable_owlqn;
   double step;
   lbfgs_parameter_t param = (_param) ? (*_param) : default_param;
   const int m = param.m;
@@ -428,8 +428,8 @@ int lbfgs(int n, double* x, double* pfx, lbfgs_evaluate_t evaluate,
     return LBFGSERR_INVALID_ORTHANTWISE_END;
   }
 
-  enalbe_owlqn = (param.orthantwise_c != 0.0);
-  if (enalbe_owlqn) {
+  enable_owlqn = (param.orthantwise_c != 0.0);
+  if (enable_owlqn) {
     switch (param.linesearch) {
       case LBFGS_LINESEARCH_BACKTRACKING_WOLFE:
         linesearch = line_search_backtracking_owlqn;
@@ -461,7 +461,7 @@ int lbfgs(int n, double* x, double* pfx, lbfgs_evaluate_t evaluate,
   w = vecalloc(n);
 
   /* Allocate pseudo gradient. */
-  if (enalbe_owlqn) {
+  if (enable_owlqn) {
     pg = vecalloc(n);
   }
 
@@ -483,7 +483,7 @@ int lbfgs(int n, double* x, double* pfx, lbfgs_evaluate_t evaluate,
   fx = cd.evaluate(cd.instance, cd.n, x, g, 0);
   n_evaluate++;
 
-  if (enalbe_owlqn) {
+  if (enable_owlqn) {
     xnorm = owlqn_x1norm(x, param.orthantwise_start, param.orthantwise_end);
     fx += xnorm * param.orthantwise_c;
     owlqn_pseudo_gradient(pg, x, g, n, param.orthantwise_c,
@@ -499,7 +499,7 @@ int lbfgs(int n, double* x, double* pfx, lbfgs_evaluate_t evaluate,
   * Compute the direction.
   * we assume the initial hessian matrix H_0 as the identity matrix.
   */
-  if (!enalbe_owlqn) {
+  if (!enable_owlqn) {
     vecncpy(d, g, n);
   } else {
     vecncpy(d, pg, n);
@@ -509,7 +509,7 @@ int lbfgs(int n, double* x, double* pfx, lbfgs_evaluate_t evaluate,
   * Make sure that the initial variables are not a minimizer.
   */
   vec2norm(&xnorm, x, n);
-  if (!enalbe_owlqn) {
+  if (!enable_owlqn) {
     vec2norm(&gnorm, g, n);
   } else {
     vec2norm(&gnorm, pg, n);
@@ -536,7 +536,7 @@ int lbfgs(int n, double* x, double* pfx, lbfgs_evaluate_t evaluate,
     veccpy(gp, g, n);
 
     /* Search for an optimal step. */
-    if (!enalbe_owlqn) {
+    if (!enable_owlqn) {
       ls = linesearch(n, x, &fx, g, d, &step, xp, gp, w, &cd, &param);
     } else {
       ls = linesearch(n, x, &fx, g, d, &step, xp, pg, w, &cd, &param);
@@ -556,7 +556,7 @@ int lbfgs(int n, double* x, double* pfx, lbfgs_evaluate_t evaluate,
 
     /* Compute x and g norms. */
     vec2norm(&xnorm, x, n);
-    if (!enalbe_owlqn) {
+    if (!enable_owlqn) {
       vec2norm(&gnorm, g, n);
     } else {
       vec2norm(&gnorm, pg, n);
@@ -635,7 +635,7 @@ int lbfgs(int n, double* x, double* pfx, lbfgs_evaluate_t evaluate,
 
     /* Compute the steepest direction. */
     /* Compute the negative of (pseudo) gradient. */
-    if (!enalbe_owlqn) {
+    if (!enable_owlqn) {
       vecncpy(d, g, n);
     } else {
       vecncpy(d, pg, n);
@@ -665,8 +665,8 @@ int lbfgs(int n, double* x, double* pfx, lbfgs_evaluate_t evaluate,
     }
 
     /* Constrain the search direction for orthant-wise updates. */
-    if (enalbe_owlqn) {
-      owlqn_contrain_line_search(d, pg, param.orthantwise_start,
+    if (enable_owlqn) {
+      owlqn_constrain_line_search(d, pg, param.orthantwise_start,
                                  param.orthantwise_end);
     }
 
@@ -1363,7 +1363,7 @@ static void owlqn_project(double* d, const double* sign, const int start,
     }
 }
 
-static void owlqn_contrain_line_search(double* d, const double* pg,
+static void owlqn_constrain_line_search(double* d, const double* pg,
                                        const int start, const int end) {
   int i;
   for (i = start; i < end; i++)
