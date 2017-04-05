@@ -1,7 +1,6 @@
 package lbfgs4j;
 
-
-@SuppressWarnings({"SuspiciousNameCombination", "unused"})
+@SuppressWarnings({"SuspiciousNameCombination", "unused", "WeakerAccess"})
 public class LBFGS {
     public static final int LBFGS_SUCCESS = 0;
     public static final int LBFGS_CONVERGENCE = 0;
@@ -43,41 +42,177 @@ public class LBFGS {
     public static final int LBFGS_LINESEARCH_BACKTRACKING_WOLFE = 2;
     public static final int LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE = 3;
 
+    @SuppressWarnings("WeakerAccess")
     public static class Param {
+        /**
+         * The number of corrections to approximate the inverse hessian matrix.
+         * The L-BFGS stores the computation results of previous m iterations
+         * to approximate the inverse hessian matrix of the current iteration.
+         * It controls the size of the limited memories(corrections).
+         * <p>
+         * Values less than 3 are not recommended.
+         * Large values will result in excessive computing time and memory usage.
+         */
         public int m = 6;
+        /**
+         * Epsilon for convergence test.
+         * It determines the accuracy with which the solution is to be found.
+         * lbfgs() stops when:
+         * ||g(x)|| < epsilon * max(1, ||x||)
+         */
         public double epsilon = 1e-5;
+        /**
+         * Distance for delta-based convergence test.
+         * It determines the distance, in iterations, to compute the rate of decrease
+         * of f(x).
+         * If the it is zero, lbfgs() does not perform the delta-based convergence
+         * test.
+         */
         public int past = 0;
+        /**
+         * Delta for convergence test.
+         * It determines the minimum rate of decrease of f(x).
+         * lbfgs() stops when:
+         * (f(x_{k+1}) - f(x_{k})) / f(x_{k}) < delta
+         */
         public double delta = 1e-5;
+        /**
+         * The maximum number of iterations.
+         * lbfgs() stops with LBFGSERR_MAXIMUMITERATION
+         * when the iteration counter exceeds max_iterations.
+         * Zero means a never ending optimization process until convergence or errors.
+         */
         public int max_iterations = 0;
+        /**
+         * The line search algorithm.
+         */
         public int linesearch = LBFGS_LINESEARCH_DEFAULT;
+        /**
+         * The maximum number of trials for the line search per iteration.
+         */
         public int max_linesearch = 40;
+        /**
+         * The minimum step of the line search.
+         * <p>
+         * This value need not be modified unless
+         * the exponents are too large for the machine being used, or unless the
+         * problem is extremely badly scaled (in which case the exponents should
+         * be increased).
+         */
         public double min_step = 1e-20;
+        /**
+         * The maximum step of the line search.
+         * <p>
+         * This value need not be modified unless
+         * the exponents are too large for the machine being used, or unless the
+         * problem is extremely badly scaled (in which case the exponents should
+         * be increased).
+         */
         public double max_step = 1e20;
+        /**
+         * A parameter to control the accuracy of the line search.
+         * <p>
+         * It should be greater than zero and smaller than 0.5.
+         */
         public double ftol = 1e-4;
+        /**
+         * A coefficient for the (strong) Wolfe condition.
+         * It is valid only when the backtracking line-search
+         * algorithm is used with the Wolfe condition
+         * (LBFGS_LINESEARCH_BACKTRACKING_STRONG_WOLFE or
+         * LBFGS_LINESEARCH_BACKTRACKING_WOLFE).
+         * <p>
+         * It should be greater than the ftol parameter and smaller than 1.0.
+         */
         public double wolfe = 0.9;
+        /**
+         * A parameter to control the accuracy of the line search.
+         * <p>
+         * It should be greater than the ftol parameter (1e-4) and smaller than 1.0.
+         * <p>
+         * If evaluations of f(x) and g(x) are expensive
+         * with respect to the cost of the iteration (when n is very large),
+         * it may be advantageous to set it to a small value.
+         * <p>
+         * A typical small value is 0.1.
+         */
         public double gtol = 0.9;
+        /**
+         * The machine precision for floating-point values.
+         * It must be a positive value set by a client program to
+         * estimate the machine precision. The line search will terminate
+         * with LBFGSERR_ROUNDING_ERROR if the relative width
+         * of the interval of uncertainty is less than it.
+         */
         public double xtol = 1e-16;
+        /**
+         * Coefficient for the L1 norm regularization of x.
+         * It should be set to zero for standard optimization problems.
+         * Setting it to a positive value activates OWLQN method,
+         * which minimizes f(x) + C|x|.
+         * It is the coefficient C.
+         */
         public double orthantwise_c = 0;
+        /**
+         * Start/end index for computing |x|.
+         * They are valid only for OWLQN method (orthantwise_c != 0.0).
+         * They specify the first and last indices between which lbfgs() computes |x|.
+         */
         public int orthantwise_start = 0;
         public int orthantwise_end = -1;
     }
 
     public interface IObjectiveFunction {
+        /**
+         * Callback to provide f(x) and g(x).
+         * Obviously, a client program MUST implement it.
+         *
+         * @param x    Current x.
+         * @param g    [OUTPUT] Current g(x).
+         * @param step The current step of the line search.
+         * @return double       f(x).
+         */
         double evaluate(double x[], double g[], double step);
     }
 
     public interface IProgress {
+        /**
+         * Callback to receive the optimization progress.
+         *
+         * @param x          Current x.
+         * @param g          Current g(x).
+         * @param fx         Current f(x).
+         * @param xnorm      The Euclidean norm of the x.
+         * @param gnorm      The Euclidean norm of the g.
+         * @param step       The line-search step used for this iteration.
+         * @param k          The iteration count.
+         * @param n_evaluate The number of evaluations of f(x) and g(x).
+         * @return int          Zero to continue the optimization process.
+         * Non-zero value will cancel the optimization process.
+         * Default progress callback never always returns zero.
+         */
         int progress(double x[], double g[], double fx,
                      double xnorm, double gnorm,
                      double step, int k, int n_evaluate);
     }
 
-    public int run(double x[], IObjectiveFunction func, IProgress progress, Param param) {
+    public static class DefaultProgress implements IProgress {
+        @Override
+        public int progress(double x[], double g[], double fx,
+                            double xnorm, double gnorm,
+                            double step, int k, int n_evaluate) {
+            System.out.printf("fx=%f, xnorm=%f, gnorm=%f, step=%f, iteration=%d, evaluation=%d\n",
+                    fx, xnorm, gnorm, step, k, n_evaluate);
+            return 0;
+        }
+    }
+
+    public int run(double x[], IObjectiveFunction obj, IProgress prog, Param param) {
         int n = x.length;
         int i, j, k, ls, end, bound, n_evaluate = 0;
         boolean enable_owlqn;
         double step[] = new double[1];
-        int m = param.m;
+        int m;
         double xp[];
         double g[], gp[], pg[] = null;
         double d[], w[], pf[] = null;
@@ -90,6 +225,15 @@ public class LBFGS {
         if (n <= 0) {
             return LBFGSERR_INVALID_N;
         }
+
+        if (prog == null) {
+            prog = new DefaultProgress();
+        }
+
+        if (param == null) {
+            param = new Param();
+        }
+        m = param.m;
         if (param.epsilon < 0.0) {
             return LBFGSERR_INVALID_EPSILON;
         }
@@ -172,18 +316,19 @@ public class LBFGS {
 
         lm = new IterationData[m];
         for (i = 0; i < m; i++) {
-            it = lm[i];
+            it = new IterationData();
             it.alpha = 0.0;
             it.s = new double[n];
             it.y = new double[n];
             it.ys = 0.0;
+            lm[i] = it;
         }
 
         if (param.past > 0) {
             pf = new double[param.past];
         }
 
-        fx[0] = func.evaluate(x, g, 0);
+        fx[0] = obj.evaluate(x, g, 0);
         n_evaluate++;
 
         if (enable_owlqn) {
@@ -224,9 +369,9 @@ public class LBFGS {
             copy(xp, x);
             copy(gp, g);
             if (!enable_owlqn) {
-                ls = linesearch.search(x, fx, g, d, step, xp, gp, w, func, param);
+                ls = linesearch.search(x, fx, g, d, step, xp, gp, w, obj, param);
             } else {
-                ls = linesearch.search(x, fx, g, d, step, xp, pg, w, func, param);
+                ls = linesearch.search(x, fx, g, d, step, xp, pg, w, obj, param);
                 owlqn_pseudo_gradient(pg, x, g, n, param.orthantwise_c,
                         param.orthantwise_start, param.orthantwise_end);
             }
@@ -246,7 +391,7 @@ public class LBFGS {
                 gnorm = norm2(pg);
             }
 
-            if (progress.progress(x, g, fx[0], xnorm, gnorm, step[0], k, n_evaluate) != 0) {
+            if (prog.progress(x, g, fx[0], xnorm, gnorm, step[0], k, n_evaluate) != 0) {
                 return LBFGSERR_CANCELED;
             }
 
@@ -320,7 +465,7 @@ public class LBFGS {
         int search(double x[], double f[], double g[],
                    double s[], double step[], double xp[],
                    double gp[], double wa[],
-                   IObjectiveFunction func,
+                   IObjectiveFunction obj,
                    Param param);
     }
 
@@ -394,7 +539,6 @@ public class LBFGS {
         return 1.0 / norm2(x);
     }
 
-
     private static double owlqn_x1norm(double x[], int start, int end) {
         int i;
         double norm = 0.0;
@@ -459,7 +603,7 @@ public class LBFGS {
         public int search(double x[], double f[], double g[],
                           double s[], double step[], double xp[],
                           double gp[], double wa[],
-                          IObjectiveFunction func,
+                          IObjectiveFunction obj,
                           Param param) {
             int count = 0;
             boolean brackt[] = new boolean[1], stage1;
@@ -519,7 +663,7 @@ public class LBFGS {
                 copy(x, xp);
                 add(x, s, step[0]);
 
-                f[0] = func.evaluate(x, g, step[0]);
+                f[0] = obj.evaluate(x, g, step[0]);
                 count++;
 
                 dg[0] = dot(g, s);
@@ -754,7 +898,7 @@ public class LBFGS {
         public int search(double x[], double f[], double g[],
                           double s[], double step[], double xp[],
                           double gp[], double wa[],
-                          IObjectiveFunction func,
+                          IObjectiveFunction obj,
                           Param param) {
             int count = 0;
             double width, dg;
@@ -778,7 +922,7 @@ public class LBFGS {
                 copy(x, xp);
                 add(x, s, step[0]);
 
-                f[0] = func.evaluate(x, g, step[0]);
+                f[0] = obj.evaluate(x, g, step[0]);
                 count++;
 
                 if (f[0] > finit + step[0] * dgtest) {
@@ -824,10 +968,10 @@ public class LBFGS {
         public int search(double x[], double f[], double g[],
                           double s[], double step[], double xp[],
                           double gp[], double wp[],
-                          IObjectiveFunction func,
+                          IObjectiveFunction obj,
                           Param param) {
             int i, count = 0;
-            double width = 0.5, norm = 0.0;
+            double width = 0.5, norm;
             double finit = f[0], dgtest;
 
             if (step[0] <= 0.0) {
@@ -844,7 +988,7 @@ public class LBFGS {
 
                 owlqn_project(x, wp, param.orthantwise_start, param.orthantwise_end);
 
-                f[0] = func.evaluate(x, g, step[0]);
+                f[0] = obj.evaluate(x, g, step[0]);
                 count++;
 
                 norm = owlqn_x1norm(x, param.orthantwise_start, param.orthantwise_end);
@@ -875,6 +1019,41 @@ public class LBFGS {
     }
 
     public static void main(String args[]) {
-        System.out.print("Hello");
+        double x[] = new double[1];
+        IObjectiveFunction obj1 = new IObjectiveFunction() {
+            @Override
+            public double evaluate(double[] x, double[] g, double step) {
+                double fx = Math.sin(x[0]);
+                g[0] = Math.cos(x[0]);
+                return fx;
+            }
+        };
+        IObjectiveFunction obj2 = new IObjectiveFunction() {
+            @Override
+            public double evaluate(double[] x, double[] g, double step) {
+                double _x = x[0];
+                double fx = _x * _x * _x * _x + _x * _x * _x + _x * _x;
+                g[0] = 4 * _x * _x * _x + 3 * _x * _x + 2 * _x;
+                return fx;
+            }
+        };
+        IObjectiveFunction obj3 = new IObjectiveFunction() {
+            @Override
+            public double evaluate(double[] x, double[] g, double step) {
+                double exp_nx = Math.exp(-x[0]);
+                double fx = 1.0 / (1.0 + exp_nx);
+                g[0] = fx * (1.0 - fx);
+                return fx;
+            }
+        };
+
+        LBFGS lbfgs = new LBFGS();
+        int ret;
+        ret = lbfgs.run(x, obj1, null, null);
+        System.out.printf("%d\n", ret);
+        ret = lbfgs.run(x, obj2, null, null);
+        System.out.printf("%d\n", ret);
+        ret = lbfgs.run(x, obj3, null, null);
+        System.out.printf("%d\n", ret);
     }
 }
