@@ -1,0 +1,19 @@
+{
+global:
+    lbfgs;
+    lbfgs_default_parameter;
+    vec2norm;
+    vec2norminv;
+    vecadd;
+    vecalloc;
+    veccpy;
+    vecdiff;
+    vecdot;
+    vecfree;
+    vecncpy;
+    vecscale;
+    vecswap;
+
+local:
+    *;
+};
