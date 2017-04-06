@@ -32,8 +32,8 @@ package lbfgs4j;
 import java.util.logging.Logger;
 
 @SuppressWarnings({"SuspiciousNameCombination", "unused", "WeakerAccess"})
-public class LBFGS {
-    private static Logger log = Logger.getLogger("LBFGS");
+public class sLBFGS {
+    private static Logger log = Logger.getLogger("sLBFGS");
 
     public static final int LBFGS_SUCCESS = 0;
     public static final int LBFGS_CONVERGENCE = 0;
@@ -185,7 +185,7 @@ public class LBFGS {
          * which minimizes f(x) + C|x|.
          * It is the coefficient C.
          */
-        public double orthantwise_c = 0;
+        public float orthantwise_c = 0;
         /**
          * Start/end index for computing |x|.
          * They are valid only for OWLQN method (orthantwise_c != 0.0).
@@ -205,7 +205,7 @@ public class LBFGS {
          * @param step The current step of the line search.
          * @return double       f(x).
          */
-        double evaluate(double x[], double g[], double step);
+        double evaluate(float x[], float g[], double step);
     }
 
     public interface IProgress {
@@ -224,14 +224,14 @@ public class LBFGS {
          * Non-zero value will cancel the optimization process.
          * Default progress callback never always returns zero.
          */
-        int progress(double x[], double g[], double fx,
+        int progress(float x[], float g[], double fx,
                      double xnorm, double gnorm,
                      double step, int k, int n_evaluate);
     }
 
     public static class DefaultProgress implements IProgress {
         @Override
-        public int progress(double x[], double g[], double fx,
+        public int progress(float x[], float g[], double fx,
                             double xnorm, double gnorm,
                             double step, int k, int n_evaluate) {
             log.info(String.format("iteration=%d, fx=%f, xnorm=%f, gnorm=%f, gnorm/xnorm=%g, " +
@@ -241,15 +241,16 @@ public class LBFGS {
         }
     }
 
-    public int run(double x[], IObjectiveFunction obj, IProgress prog, Param param) {
+    public int run(float x[], IObjectiveFunction obj, IProgress prog, Param param) {
         int n = x.length;
         int i, j, k, ls, end, bound, n_evaluate = 0;
         boolean enable_owlqn;
         double step[] = new double[1];
         int m;
-        double xp[];
-        double g[], gp[], pg[] = null;
-        double d[], w[], pf[] = null;
+        float xp[];
+        float g[], gp[], pg[] = null;
+        float d[], w[];
+        double pf[] = null;
         IterationData lm[], it;
         double ys, yy;
         double xnorm, gnorm, rate, beta;
@@ -339,21 +340,21 @@ public class LBFGS {
         }
 
 
-        xp = new double[n];
-        g = new double[n];
-        gp = new double[n];
-        d = new double[n];
-        w = new double[n];
+        xp = new float[n];
+        g = new float[n];
+        gp = new float[n];
+        d = new float[n];
+        w = new float[n];
         if (enable_owlqn) {
-            pg = new double[n];
+            pg = new float[n];
         }
 
         lm = new IterationData[m];
         for (i = 0; i < m; i++) {
             it = new IterationData();
             it.alpha = 0.0;
-            it.s = new double[n];
-            it.y = new double[n];
+            it.s = new float[n];
+            it.y = new float[n];
             it.ys = 0.0;
             lm[i] = it;
         }
@@ -478,16 +479,16 @@ public class LBFGS {
                 it = lm[j];
                 it.alpha = dot(it.s, d);
                 it.alpha /= it.ys;
-                add(d, it.y, -it.alpha);
+                add(d, it.y, (float)-it.alpha);
             }
 
-            scale(d, ys / yy);
+            scale(d, (float)(ys / yy));
 
             for (i = 0; i < bound; i++) {
                 it = lm[j];
                 beta = dot(it.y, d);
                 beta /= it.ys;
-                add(d, it.s, it.alpha - beta);
+                add(d, it.s, (float)(it.alpha - beta));
                 j = (j + 1) % m;
             }
 
@@ -500,17 +501,17 @@ public class LBFGS {
     }
 
     private interface ILineSearch {
-        int search(double x[], double f[], double g[],
-                   double s[], double step[], double xp[],
-                   double gp[], double wa[],
+        int search(float x[], double f[], float g[],
+                   float s[], double step[], float xp[],
+                   float gp[], float wa[],
                    IObjectiveFunction obj,
                    Param param);
     }
 
     private static class IterationData {
         double alpha;
-        double s[];
-        double y[];
+        float s[];
+        float y[];
         double ys;
     }
 
@@ -527,37 +528,37 @@ public class LBFGS {
         return ab >= c ? ab : c;
     }
 
-    private static void copy(double y[], double[] x) {
+    private static void copy(float y[], float[] x) {
         for (int i = 0; i < x.length; ++i) {
             y[i] = x[i];
         }
     }
 
-    private static void ncopy(double y[], double[] x) {
+    private static void ncopy(float y[], float[] x) {
         for (int i = 0; i < x.length; ++i) {
             y[i] = -x[i];
         }
     }
 
-    private static void add(double y[], double x[], double c) {
+    private static void add(float y[], float x[], float c) {
         for (int i = 0; i < x.length; ++i) {
             y[i] = y[i] + c * x[i];
         }
     }
 
-    private static void diff(double[] z, double[] x, double[] y) {
+    private static void diff(float[] z, float[] x, float[] y) {
         for (int i = 0; i < x.length; ++i) {
             z[i] = x[i] - y[i];
         }
     }
 
-    private static void scale(double y[], double c) {
+    private static void scale(float y[], float c) {
         for (int i = 0; i < y.length; ++i) {
             y[i] = c * y[i];
         }
     }
 
-    private static double dot(double x[], double y[]) {
+    private static double dot(float x[], float y[]) {
         double dot = 0;
         for (int i = 0; i < x.length; ++i) {
             dot += x[i] * y[i];
@@ -565,7 +566,7 @@ public class LBFGS {
         return dot;
     }
 
-    private static double norm2(double x[]) {
+    private static double norm2(float x[]) {
         double dot = 0;
         for (int i = 0; i < x.length; ++i) {
             dot += x[i] * x[i];
@@ -573,11 +574,11 @@ public class LBFGS {
         return Math.sqrt(dot);
     }
 
-    private static double norm2inv(double x[]) {
+    private static double norm2inv(float x[]) {
         return 1.0 / norm2(x);
     }
 
-    private static double owlqn_x1norm(double x[], int start, int end) {
+    private static double owlqn_x1norm(float x[], int start, int end) {
         int i;
         double norm = 0.0;
         for (i = start; i < end; i++) {
@@ -586,8 +587,8 @@ public class LBFGS {
         return norm;
     }
 
-    private static void owlqn_pseudo_gradient(double pg[], double x[], double g[],
-                                              int n, double c, int start, int end) {
+    private static void owlqn_pseudo_gradient(float pg[], float x[], float g[],
+                                              int n, float c, int start, int end) {
         int i;
 
         for (i = 0; i < start; i++) {
@@ -595,8 +596,8 @@ public class LBFGS {
         }
 
         for (i = start; i < end; i++) {
-            double xi = x[i];
-            double gi = g[i];
+            float xi = x[i];
+            float gi = g[i];
             if (xi < 0.0) {
                 pg[i] = gi - c;
             } else if (xi > 0.0) {
@@ -607,7 +608,7 @@ public class LBFGS {
                 } else if (gi > c) {
                     pg[i] = gi - c;
                 } else {
-                    pg[i] = 0.0;
+                    pg[i] = 0.0f;
                 }
             }
         }
@@ -617,30 +618,30 @@ public class LBFGS {
         }
     }
 
-    private static void owlqn_project(double d[], double sign[], int start, int end) {
+    private static void owlqn_project(float d[], float sign[], int start, int end) {
         int i;
         for (i = start; i < end; i++) {
             if (d[i] * sign[i] <= 0.0) {
-                d[i] = 0.0;
+                d[i] = 0.0f;
             }
         }
     }
 
-    private static void owlqn_constrain_line_search(double d[], double pg[],
+    private static void owlqn_constrain_line_search(float d[], float pg[],
                                                     int start, int end) {
         int i;
         for (i = start; i < end; i++) {
             if (d[i] * pg[i] >= 0) {
-                d[i] = 0.0;
+                d[i] = 0.0f;
             }
         }
     }
 
     class LineSearchMorethuente implements ILineSearch {
         @Override
-        public int search(double x[], double f[], double g[],
-                          double s[], double step[], double xp[],
-                          double gp[], double wa[],
+        public int search(float x[], double f[], float g[],
+                          float s[], double step[], float xp[],
+                          float gp[], float wa[],
                           IObjectiveFunction obj,
                           Param param) {
             int count = 0;
@@ -699,7 +700,7 @@ public class LBFGS {
                 }
 
                 copy(x, xp);
-                add(x, s, step[0]);
+                add(x, s, (float)step[0]);
 
                 f[0] = obj.evaluate(x, g, step[0]);
                 count++;
@@ -933,9 +934,9 @@ public class LBFGS {
 
     class LineSearchBacktracking implements ILineSearch {
         @Override
-        public int search(double x[], double f[], double g[],
-                          double s[], double step[], double xp[],
-                          double gp[], double wa[],
+        public int search(float x[], double f[], float g[],
+                          float s[], double step[], float xp[],
+                          float gp[], float wa[],
                           IObjectiveFunction obj,
                           Param param) {
             int count = 0;
@@ -958,7 +959,7 @@ public class LBFGS {
 
             for (; ; ) {
                 copy(x, xp);
-                add(x, s, step[0]);
+                add(x, s, (float)step[0]);
 
                 f[0] = obj.evaluate(x, g, step[0]);
                 count++;
@@ -1003,9 +1004,9 @@ public class LBFGS {
 
     class LineSearchBacktrackingOWLQN implements ILineSearch {
         @Override
-        public int search(double x[], double f[], double g[],
-                          double s[], double step[], double xp[],
-                          double gp[], double wp[],
+        public int search(float x[], double f[], float g[],
+                          float s[], double step[], float xp[],
+                          float gp[], float wp[],
                           IObjectiveFunction obj,
                           Param param) {
             int i, count = 0;
@@ -1022,7 +1023,7 @@ public class LBFGS {
 
             for (; ; ) {
                 copy(x, xp);
-                add(x, s, step[0]);
+                add(x, s, (float)step[0]);
 
                 owlqn_project(x, wp, param.orthantwise_start, param.orthantwise_end);
 
@@ -1057,35 +1058,35 @@ public class LBFGS {
     }
 
     public static void main(String args[]) {
-        double x[] = new double[1];
+        float x[] = new float[1];
         IObjectiveFunction obj1 = new IObjectiveFunction() {
             @Override
-            public double evaluate(double[] x, double[] g, double step) {
+            public double evaluate(float[] x, float[] g, double step) {
                 double fx = Math.sin(x[0]);
-                g[0] = Math.cos(x[0]);
+                g[0] = (float)Math.cos(x[0]);
                 return fx;
             }
         };
         IObjectiveFunction obj2 = new IObjectiveFunction() {
             @Override
-            public double evaluate(double[] x, double[] g, double step) {
+            public double evaluate(float[] x, float[] g, double step) {
                 double _x = x[0];
                 double fx = _x * _x * _x * _x + _x * _x * _x + _x * _x;
-                g[0] = 4 * _x * _x * _x + 3 * _x * _x + 2 * _x;
+                g[0] = (float)(4 * _x * _x * _x + 3 * _x * _x + 2 * _x);
                 return fx;
             }
         };
         IObjectiveFunction obj3 = new IObjectiveFunction() {
             @Override
-            public double evaluate(double[] x, double[] g, double step) {
+            public double evaluate(float[] x, float[] g, double step) {
                 double exp_nx = Math.exp(-x[0]);
                 double fx = 1.0 / (1.0 + exp_nx);
-                g[0] = fx * (1.0 - fx);
+                g[0] = (float)(fx * (1.0 - fx));
                 return fx;
             }
         };
 
-        LBFGS lbfgs = new LBFGS();
+        sLBFGS lbfgs = new sLBFGS();
         int ret;
         ret = lbfgs.run(x, obj1, null, null);
         System.out.printf("LBFGS returns %d\n", ret);
@@ -1094,7 +1095,7 @@ public class LBFGS {
         ret = lbfgs.run(x, obj3, null, null);
         System.out.printf("LBFGS returns %d\n", ret);
 
-        x = new double[2000000 * 32];
+        x = new float[2000000 * 32];
         ret = lbfgs.run(x, obj1, null, null);
         System.out.printf("LBFGS returns %d\n", ret);
     }
