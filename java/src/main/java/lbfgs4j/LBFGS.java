@@ -230,7 +230,7 @@ public class LBFGS {
         public int progress(double x[], double g[], double fx,
                             double xnorm, double gnorm,
                             double step, int k, int n_evaluate) {
-            System.out.printf("iteration=%d, fx=%f, xnorm=%f, gnorm=%f, gnorm/xnorm=%g, step=%f, evaluation=%d\n",
+            System.err.printf("iteration=%d, fx=%f, xnorm=%f, gnorm=%f, gnorm/xnorm=%g, step=%f, evaluation=%d\n",
                     k, fx, xnorm, gnorm, gnorm / xnorm, step, n_evaluate);
             return 0;
         }
@@ -356,6 +356,10 @@ public class LBFGS {
         if (param.past > 0) {
             pf = new double[param.past];
         }
+
+        System.err.println("Free memory: " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + " M");
+        System.err.println("Total memory: " + Runtime.getRuntime().totalMemory() / 1024 / 1024 + " M");
+        System.err.println("Max memory: " + Runtime.getRuntime().maxMemory() / 1024 / 1024 + " M");
 
         fx[0] = obj.evaluate(x, g, 0);
         n_evaluate++;

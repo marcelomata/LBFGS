@@ -333,10 +333,10 @@ static int default_lbfgs_progress(void* instance, int n, const double* x,
                                   const double* g, const double fx,
                                   const double xnorm, const double gnorm,
                                   const double step, int k, int n_evaluate) {
-  printf("Iteration %d:\n", k);
-  printf("    fx=%8.8lf, evaluations of fx=%d\n", fx, n_evaluate);
-  printf("    xnorm=%8.8lf, gnorm=%8.8lf, step=%8.8lf\n", xnorm, gnorm, step);
-  printf("\n");
+  fprintf(stderr,
+          "iteration=%d, fx=%f, xnorm=%f, gnorm=%f, gnorm/xnorm=%g, "
+          "step=%f, evaluation=%d\n",
+          k, fx, xnorm, gnorm, gnorm / xnorm, step, n_evaluate);
   return 0;
 }
 
