@@ -1,3 +1,32 @@
+/**
+ * Unconstrained Limited memory BFGS(L-BFGS).
+ * <p>
+ * Forked from https://github.com/chokkan/liblbfgs
+ * <p>
+ * The MIT License
+ * <p>
+ * Copyright (c) 1990 Jorge Nocedal
+ * Copyright (c) 2007-2010 Naoaki Okazaki
+ * Copyright (c) 2014-2017 Yafei Zhang
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lbfgs4j;
 
 @SuppressWarnings({"SuspiciousNameCombination", "unused", "WeakerAccess"})
@@ -201,8 +230,8 @@ public class LBFGS {
         public int progress(double x[], double g[], double fx,
                             double xnorm, double gnorm,
                             double step, int k, int n_evaluate) {
-            System.out.printf("fx=%f, xnorm=%f, gnorm=%f, step=%f, iteration=%d, evaluation=%d\n",
-                    fx, xnorm, gnorm, step, k, n_evaluate);
+            System.out.printf("iteration=%d, fx=%f, xnorm=%f, gnorm=%f, gnorm/xnorm=%g, step=%f, evaluation=%d\n",
+                    k, fx, xnorm, gnorm, gnorm / xnorm, step, n_evaluate);
             return 0;
         }
     }
@@ -1050,10 +1079,10 @@ public class LBFGS {
         LBFGS lbfgs = new LBFGS();
         int ret;
         ret = lbfgs.run(x, obj1, null, null);
-        System.out.printf("%d\n", ret);
+        System.out.printf("LBFGS returns %d\n", ret);
         ret = lbfgs.run(x, obj2, null, null);
-        System.out.printf("%d\n", ret);
+        System.out.printf("LBFGS returns %d\n", ret);
         ret = lbfgs.run(x, obj3, null, null);
-        System.out.printf("%d\n", ret);
+        System.out.printf("LBFGS returns %d\n", ret);
     }
 }
