@@ -362,9 +362,9 @@ public class LBFGS {
             pf = new double[param.past];
         }
 
-        log.info("Free memory: " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + " M");
-        log.info("Total memory: " + Runtime.getRuntime().totalMemory() / 1024 / 1024 + " M");
-        log.info("Max memory: " + Runtime.getRuntime().maxMemory() / 1024 / 1024 + " M");
+        log.info("Free memory: " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "M");
+        log.info("Total memory: " + Runtime.getRuntime().totalMemory() / 1024 / 1024 + "M");
+        log.info("Max memory: " + Runtime.getRuntime().maxMemory() / 1024 / 1024 + "M");
 
         fx[0] = obj.evaluate(x, g, 0);
         n_evaluate++;
@@ -1092,10 +1092,6 @@ public class LBFGS {
         ret = lbfgs.run(x, obj2, null, null);
         System.out.printf("LBFGS returns %d\n", ret);
         ret = lbfgs.run(x, obj3, null, null);
-        System.out.printf("LBFGS returns %d\n", ret);
-
-        x = new double[2000000 * 32];
-        ret = lbfgs.run(x, obj1, null, null);
         System.out.printf("LBFGS returns %d\n", ret);
     }
 }

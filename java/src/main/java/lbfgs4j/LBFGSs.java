@@ -32,8 +32,8 @@ package lbfgs4j;
 import java.util.logging.Logger;
 
 @SuppressWarnings({"SuspiciousNameCombination", "unused", "WeakerAccess"})
-public class sLBFGS {
-    private static Logger log = Logger.getLogger("sLBFGS");
+public class LBFGSs {
+    private static Logger log = Logger.getLogger("LBFGSs");
 
     public static final int LBFGS_SUCCESS = 0;
     public static final int LBFGS_CONVERGENCE = 0;
@@ -363,9 +363,9 @@ public class sLBFGS {
             pf = new double[param.past];
         }
 
-        log.info("Free memory: " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + " M");
-        log.info("Total memory: " + Runtime.getRuntime().totalMemory() / 1024 / 1024 + " M");
-        log.info("Max memory: " + Runtime.getRuntime().maxMemory() / 1024 / 1024 + " M");
+        log.info("Free memory: " + Runtime.getRuntime().freeMemory() / 1024 / 1024 + "M");
+        log.info("Total memory: " + Runtime.getRuntime().totalMemory() / 1024 / 1024 + "M");
+        log.info("Max memory: " + Runtime.getRuntime().maxMemory() / 1024 / 1024 + "M");
 
         fx[0] = obj.evaluate(x, g, 0);
         n_evaluate++;
@@ -1086,17 +1086,13 @@ public class sLBFGS {
             }
         };
 
-        sLBFGS lbfgs = new sLBFGS();
+        LBFGSs lbfgs = new LBFGSs();
         int ret;
         ret = lbfgs.run(x, obj1, null, null);
         System.out.printf("LBFGS returns %d\n", ret);
         ret = lbfgs.run(x, obj2, null, null);
         System.out.printf("LBFGS returns %d\n", ret);
         ret = lbfgs.run(x, obj3, null, null);
-        System.out.printf("LBFGS returns %d\n", ret);
-
-        x = new float[2000000 * 32];
-        ret = lbfgs.run(x, obj1, null, null);
         System.out.printf("LBFGS returns %d\n", ret);
     }
 }
