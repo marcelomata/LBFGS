@@ -227,6 +227,11 @@ double* vecalloc(int size) {
 void vecfree(double* vec) { free(vec); }
 #endif
 
+void veczero(double* x, const int n) {
+  static const double ZERO = 0;
+  cblas_dcopy(n, &ZERO, 0, x, 1);
+}
+
 void veccpy(double* y, const double* x, const int n) {
   cblas_dcopy(n, x, 1, y, 1);
 }

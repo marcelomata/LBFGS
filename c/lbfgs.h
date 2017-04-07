@@ -43,6 +43,7 @@
 /************************************************************************/
 EXTERN double* vecalloc(int size);
 EXTERN void vecfree(double* vec);
+EXTERN void veczero(double* x, const int n);
 EXTERN void veccpy(double* y, const double* x, const int n);
 EXTERN void vecncpy(double* y, const double* x, const int n);
 EXTERN void vecadd(double* y, const double* x, const double c, const int n);
