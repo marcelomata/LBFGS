@@ -48,6 +48,7 @@ EXTERN void veccpy(double* y, const double* x, const int n);
 EXTERN void vecncpy(double* y, const double* x, const int n);
 EXTERN void vecadd(double* y, const double* x, const double c, const int n);
 EXTERN void vecdiff(double* z, const double* x, const double* y, const int n);
+EXTERN void vecsum(double* s, const double* x, const int n);
 EXTERN void vecscale(double* y, const double c, const int n);
 EXTERN void vecdot(double* s, const double* x, const double* y, const int n);
 EXTERN void vec2norm(double* s, const double* x, const int n);

@@ -254,6 +254,11 @@ void vecscale(double* y, const double c, const int n) {
   cblas_dscal(n, c, y, 1);
 }
 
+void vecsum(double* s, const double* x, const int n) {
+  static const double ONE = 1;
+  *s = cblas_ddot(n, x, 1, &ONE, 0);
+}
+
 void vecdot(double* s, const double* x, const double* y, const int n) {
   *s = cblas_ddot(n, x, 1, y, 1);
 }
